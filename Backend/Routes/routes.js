@@ -2,23 +2,25 @@ const router = require("express").Router();
 const User = require("../Model/User");
 const jwt = require("jsonwebtoken");
 const words = require("../Middleware/InapropWords");
+const login = require("../Middleware/auth.js");
 
 
 // Register middleware path 
 router.post("/register", async (req, res) => {
     const { username, email, password } = req.body;
+
+//checking for inapropriate words
+    for(const iw of words.inapproriateWords) {
+      if (username.includes(iw)) {
+       return res.status(400).json({ error: "Inappropriate word, try another username" });
+         }
+    };
+
     try {
       let user = await User.findOne({ email });
       if (user) {
         return res.status(400).json({ error: "User already exists" });
       }
-
-      //checking for inapropriate words
-    words.array.forEach(element => {
-      if (username === element) {
-       return res.status(400).json({ error: "Inappropriate word, try another username" });
-         }
-    });
 
   //instantiate new user and save it to the database
       user = new User({
@@ -52,7 +54,7 @@ router.post("/register", async (req, res) => {
       }
 
   //create a token that expires after an hour
-      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ _id: user._id }, "this is a secret", {
         expiresIn: "1h",
       });
   
@@ -71,15 +73,15 @@ router.post("/register", async (req, res) => {
   });
   
   
-  // Get logged in user
-  // router.get("/", requireLogin, async (req, res) => {
-  //   try {
-  //     const user = await User.findById(req.user._id).select("-password -__v");
-  //     res.json(user);
-  //   } catch (error) {
-  //     // console.log(err);
-  //     return res.status(400).json({ error: err.message });
-  //   }
-  // });
+  //Get logged in user
+
+  router.get("/", login.requireLogin, async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id)
+      res.json(user);
+    } catch (error) {
+      return res.status(400).json({ error: err.message });
+    }
+  });
   
   module.exports = router;

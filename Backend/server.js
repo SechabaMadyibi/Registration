@@ -23,7 +23,8 @@ mongoose
 app.use(express.json());
 
 //routes
-routes;
+app.use(routes);
+
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
