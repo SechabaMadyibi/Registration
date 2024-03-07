@@ -1,26 +1,31 @@
 const router = require("express").Router();
+require("dotenv").config();
 const User = require("../Model/User");
 const jwt = require("jsonwebtoken");
-const words = require("../Middleware/InapropWords");
-const login = require("../Middleware/auth.js");
+const { requireLogin }= require("../Middleware/auth.js");
 
 
 // Register middleware path 
 router.post("/register", async (req, res) => {
     const { username, email, password } = req.body;
 
-//checking for inapropriate words
-    for(const iw of words.inapproriateWords) {
-      if (username.includes(iw)) {
-       return res.status(400).json({ error: "Inappropriate word, try another username" });
-         }
-    };
-
     try {
+
+  //checking for inapropriate words
+  const inapproriateWords = ["user1", "user2", "user3", "user4", "user5", "user6", "user7", "user8", "user9", "user10"];
+  for(const iw of inapproriateWords) {
+    if (username === iw) {
+     return res.status(400).json({ error: "Inappropriate word, try another username" });
+       }
+  };
+  
+//check if use already exists
       let user = await User.findOne({ email });
       if (user) {
         return res.status(400).json({ error: "User already exists" });
       }
+
+    
 
   //instantiate new user and save it to the database
       user = new User({
@@ -54,7 +59,8 @@ router.post("/register", async (req, res) => {
       }
 
   //create a token that expires after an hour
-      const token = jwt.sign({ _id: user._id }, "this is a secret", {
+ 
+      const token = jwt.sign({ _id: user._id },'Sechaba', {
         expiresIn: "1h",
       });
   
@@ -75,10 +81,11 @@ router.post("/register", async (req, res) => {
   
   //Get logged in user
 
-  router.get("/", login.requireLogin, async (req, res) => {
+  router.get("/home",requireLogin, async (req, res) => {
     try {
       const user = await User.findById(req.user._id)
       res.json(user);
+      console.log(user)
     } catch (error) {
       return res.status(400).json({ error: err.message });
     }
