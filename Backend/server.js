@@ -6,12 +6,12 @@ const routes = require("./Routes/routes.js")
 
 //connect to database
 const mongo = "mongodb+srv://sechabamadyibi1:12345@cluster0.eu31p86.mongodb.net/"
+
 mongoose
   .connect(mongo, {
+    //Set to true to use the new MongoDB connection string parser.
     useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
+
   })
 
   .then(() => console.log("MongoDB is connected"))
